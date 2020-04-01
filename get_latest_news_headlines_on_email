@@ -1,0 +1,100 @@
+# For more information visit www.aipython.in/python
+# Python 3 code
+# Import library packages
+from selenium import webdriver
+from selenium.webdriver.common.keys import Keys
+import datetime, time, os
+import smtplib
+from email.message import EmailMessage
+
+td = datetime.date.today()
+
+# create a webdriver object for chrome-option and configure
+wait_imp = 10
+CO = webdriver.ChromeOptions()
+CO.add_experimental_option('useAutomationExtension', False)
+CO.add_argument('--ignore-certificate-errors')
+CO.add_argument('--start-maximized')
+wd = webdriver.Chrome(r'D:\Learning\Practice\Selenium\chromedriver.exe',options=CO)
+
+print ("Connecting to Authentic News source, Please wait .....\n")
+news_site = "https://news.google.com/topstories?hl=en-IN&gl=IN&ceid=IN:en"
+
+print (" ------------------------------------------------------------------------------------------- ")
+print (">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>  TODAY's TOP NEWS HEADLINES  <<<<<<<<<<<<<<<<<<<<<<<<<<<<< ")
+print ("Date:",td.strftime("%b-%d-%Y"))
+print (" -------------------------- ")
+
+# Web driver to openup website
+wd.get(news_site)
+wd.implicitly_wait(wait_imp)
+elems = wd.find_elements_by_tag_name('h3')
+
+
+file_loc = r'D:\Learning\Practice\Selenium\Latest News\newsfile.txt'
+file_to_write = open(file_loc, 'w+')
+ind = 1
+for elem in elems:
+    file_to_write.write(str(ind)+ '>> ')
+    file_to_write.write(elem.text+'\n')
+    print (str(ind) + ") " + elem.text)
+    ind += 1
+file_to_write.close()
+print('\n')
+
+# Get credentials from your system
+USER_EMAIL = os.environ['user_email']
+MY_PASS = os.environ['my_pass']
+MY_EMAIL = os.environ['my_email']
+  
+# Compose message
+msg = EmailMessage()
+msg['From'] = MY_EMAIL
+msg['To']   = USER_EMAIL
+msg['Subject'] = " Hello ! Today's TOP news HEADLINES >>"
+
+with open(file_loc,'rb') as f:
+    N_file = f.read()
+
+# Body of email  
+msg.set_content("Find the attached document for detailed NEWS .. ")
+msg.add_attachment(N_file, maintype = 'document',subtype = 'txt', filename = f.name )
+
+# Configure server
+server = smtplib.SMTP('smtp.gmail.com', 587) #tls , ssl
+server.ehlo()
+server.starttls()
+server.ehlo()
+server.login(MY_EMAIL,MY_PASS)
+server.send_message(msg)
+
+# printing final info
+print ("A copy of this NEWS HEADLINES has been sent to your E-mail Successfuly !!")
+print ("Have a Nice Day !!")
+server.quit()
+
+# main code ENDS --------------------------------
+
+
+# ---------------- Without attachment just simple plain email with message (body text) ---------------
+# ---------------- Basic working code sample , if you don't want to attach the docs. -------------
+
+# server = smtplib.SMTP('smtp.gmail.com', 587)
+# server.ehlo()
+# server.starttls()
+# server.ehlo()
+# USER_EMAIL = os.environ['user_email']
+# MY_PASS = os.environ['my_pass']
+# MY_EMAIL = os.environ['my_email']
+
+# server.login(MY_EMAIL,MY_PASS)
+
+# subject = "Todays news Headlines"
+# body = "Todays New link - https://news.google.com/topstories?hl=en-IN&gl=IN&ceid=IN:en"
+
+# msg = f"Subject: {subject}\n\n{body}"
+
+# server.sendmail(MY_EMAIL,USER_EMAIL,msg)
+    
+# print ("Email with Today's NewHeadlines had been Sent Successfuly !!")
+# server.quit()
